@@ -198,8 +198,7 @@ function VideoUI() {
 
 	useEffect(() => {
 		if (localParticipantVideoTrack?.publication.dimensions) {
-			const { width, height } =
-				localParticipantVideoTrack.publication.dimensions;
+			const { width, height } = localParticipantVideoTrack.publication.dimensions;
 			setIsLocalPortrait(height > width);
 		}
 	}, [localParticipantVideoTrack]);
@@ -231,9 +230,21 @@ function VideoUI() {
 				</div>
 			) : (
 				<>
-					<div className="w-full h-full flex items-center justify-center">
+					<div
+						className={`w-full h-full flex items-center justify-center ${
+							isRemotePortrait ? 'flex-col' : 'flex-row'
+						}`}
+					>
 						<div
-							className={`max-w-full max-h-full ${isRemotePortrait ? "aspect-[9/16]" : "aspect-[16/9]"}`}
+							className={`${
+								isRemotePortrait
+									? 'max-h-full w-auto'
+									: 'max-w-full h-auto'
+							} ${
+								isRemotePortrait
+									? 'aspect-[9/16]'
+									: 'aspect-[16/9]'
+							}`}
 						>
 							<VideoTrack
 								trackRef={remoteParticipantVideoTracks[0]}
@@ -242,7 +253,9 @@ function VideoUI() {
 						</div>
 					</div>
 					<div
-						className={`absolute bottom-4 right-4 ${isLocalPortrait ? "w-24 h-32" : "w-32 h-24"} z-10`}
+						className={`absolute bottom-4 right-4 ${
+							isLocalPortrait ? 'w-24 h-32' : 'w-32 h-24'
+						} z-10`}
 					>
 						<VideoTrack
 							trackRef={localParticipantVideoTrack}
