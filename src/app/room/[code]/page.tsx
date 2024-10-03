@@ -193,48 +193,52 @@ function VideoUI() {
 	);
 	const remoteCount = remoteParticipantVideoTracks.length;
 
-	const [isPortrait, setIsPortrait] = useState(false);
+	const [isLocalPortrait, setIsLocalPortrait] = useState(false);
+	const [isRemotePortrait, setIsRemotePortrait] = useState(false);
 
 	useEffect(() => {
 		if (localParticipantVideoTrack?.publication.dimensions) {
 			const { width, height } = localParticipantVideoTrack.publication.dimensions;
-			setIsPortrait(height > width);
+			setIsLocalPortrait(height > width);
 		}
 	}, [localParticipantVideoTrack]);
+
+	useEffect(() => {
+		if (remoteParticipantVideoTracks[0]?.publication.dimensions) {
+			const { width, height } = remoteParticipantVideoTracks[0].publication.dimensions;
+			setIsRemotePortrait(height > width);
+		}
+	}, [remoteParticipantVideoTracks]);
 
 	if (!localParticipantVideoTrack) {
 		return null;
 	}
 
-	if (remoteCount === 0) {
-		return (
-			<div className="relative flex-grow flex items-center justify-center bg-black">
+	return (
+		<div className="relative flex-grow flex items-center justify-center bg-black">
+			{remoteCount === 0 ? (
 				<div className="relative w-full h-full flex items-center justify-center">
 					<VideoTrack
 						trackRef={localParticipantVideoTrack}
 						className="w-full h-full object-contain"
 					/>
 				</div>
-			</div>
-		);
-	}
-
-	return (
-		<div className="relative flex-grow flex items-center justify-center bg-black">
-			<div className="relative w-full h-full flex items-center justify-center">
-				<div className="max-w-full max-h-full aspect-[9/16]">
-					<VideoTrack
-						trackRef={remoteParticipantVideoTracks[0]}
-						className="w-full h-full object-contain"
-					/>
+			) : (
+				<div className="relative w-full h-full flex items-center justify-center">
+					<div className={`max-w-full max-h-full ${isRemotePortrait ? 'aspect-[9/16]' : 'aspect-[16/9]'}`}>
+						<VideoTrack
+							trackRef={remoteParticipantVideoTracks[0]}
+							className="w-full h-full object-contain"
+						/>
+					</div>
+					<div className={`absolute bottom-4 right-4 ${isLocalPortrait ? 'w-36 h-48' : 'w-48 h-36'}`}>
+						<VideoTrack
+							trackRef={localParticipantVideoTrack}
+							className="w-full h-full object-cover rounded-md shadow-lg md:object-contain"
+						/>
+					</div>
 				</div>
-				<div className={`absolute bottom-4 right-4 ${isPortrait ? 'w-36 h-48' : 'w-48 h-36'}`}>
-					<VideoTrack
-						trackRef={localParticipantVideoTrack}
-						className="w-full h-full object-cover rounded-md shadow-lg md:object-contain"
-					/>
-				</div>
-			</div>
+			)}
 		</div>
 	);
 }
