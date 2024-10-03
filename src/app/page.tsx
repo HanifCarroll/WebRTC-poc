@@ -57,45 +57,70 @@ export default function Page() {
 
 	if (token === "") {
 		if (isLoading) {
-			return <div>Getting token...</div>;
+			return (
+				<div className="flex items-center justify-center min-h-screen bg-gray-100">
+					<svg
+						className="animate-spin h-10 w-10 text-blue-500"
+						xmlns="http://www.w3.org/2000/svg"
+						fill="none"
+						viewBox="0 0 24 24"
+            title="Loading indicator"
+					>
+						<circle
+							className="opacity-25"
+							cx="12"
+							cy="12"
+							r="10"
+							stroke="currentColor"
+							strokeWidth="4"
+						/>
+						<path
+							className="opacity-75"
+							fill="currentColor"
+							d="M4 12a8 8 0 018-8v8H4z"
+						/>
+					</svg>
+				</div>
+			);
 		}
 		return (
-			<div style={{ padding: "20px", textAlign: "center" }}>
-				<h1>Enter your name to join a room</h1>
-				<form
-					onSubmit={(e) => {
-						e.preventDefault();
-						setName(inputName);
-					}}
-				>
-					<input
-						type="text"
-						value={inputName}
-						onChange={(e) => setInputName(e.target.value)}
-						placeholder="Your name"
-						style={{ padding: "10px", fontSize: "16px", width: "200px" }}
-						required
-					/>
-					<button
-						type="submit"
-						style={{
-							padding: "10px 20px",
-							marginLeft: "10px",
-							fontSize: "16px",
+			<div className="flex items-center justify-center min-h-screen bg-gray-100">
+				<div className="bg-white p-8 rounded shadow-md w-full max-w-md">
+					<h1 className="text-2xl font-semibold text-center mb-6">
+						Enter your name to join a room
+					</h1>
+					<form
+						onSubmit={(e) => {
+							e.preventDefault();
+							setName(inputName);
 						}}
+						className="space-y-4"
 					>
-						Next
-					</button>
-				</form>
+						<input
+							type="text"
+							value={inputName}
+							onChange={(e) => setInputName(e.target.value)}
+							placeholder="Your name"
+							className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+							required
+						/>
+						<button
+							type="submit"
+							className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-md transition duration-200"
+						>
+							Next
+						</button>
+					</form>
 
-				{name && (
-					<div style={{ marginTop: "30px" }}>
-						<h2>Select a room to join</h2>
-						<div>
+					{name && (
+						<div className="mt-8">
+							<h2 className="text-xl font-semibold text-center mb-4">
+								Select a room to join
+							</h2>
 							<select
 								value={selectedRoom}
 								onChange={(e) => setSelectedRoom(e.target.value)}
-								style={{ padding: "10px", fontSize: "16px", width: "220px" }}
+								className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
 							>
 								<option value="">-- Select a room --</option>
 								{roomList.map((room) => (
@@ -104,34 +129,30 @@ export default function Page() {
 									</option>
 								))}
 							</select>
+							<p className="mt-4 text-center">Or create a new room:</p>
+							<div className="mt-2 flex">
+								<input
+									type="text"
+									value={newRoomName}
+									onChange={(e) => setNewRoomName(e.target.value)}
+									placeholder="New room name"
+									className="flex-grow px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+								/>
+								<button
+									onClick={() => {
+										if (newRoomName.trim() !== "") {
+											setSelectedRoom(newRoomName.trim());
+										}
+									}}
+									className="ml-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md transition duration-200"
+									type="button"
+								>
+									Create and Join
+								</button>
+							</div>
 						</div>
-						<p style={{ marginTop: "20px" }}>Or create a new room:</p>
-						<div>
-							<input
-								type="text"
-								value={newRoomName}
-								onChange={(e) => setNewRoomName(e.target.value)}
-								placeholder="New room name"
-								style={{ padding: "10px", fontSize: "16px", width: "200px" }}
-							/>
-							<button
-								onClick={() => {
-									if (newRoomName.trim() !== "") {
-										setSelectedRoom(newRoomName.trim());
-									}
-								}}
-								style={{
-									padding: "10px 20px",
-									marginLeft: "10px",
-									fontSize: "16px",
-								}}
-								type="button"
-							>
-								Create and Join
-							</button>
-						</div>
-					</div>
-				)}
+					)}
+				</div>
 			</div>
 		);
 	}
@@ -143,7 +164,7 @@ export default function Page() {
 			token={token}
 			serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL}
 			data-lk-theme="default"
-			style={{ height: "100dvh" }}
+			className="h-screen"
 		>
 			<MediaDeviceMenu />
 			<MyVideoConference />
@@ -165,7 +186,7 @@ function MyVideoConference() {
 	return (
 		<GridLayout
 			tracks={tracks}
-			style={{ height: "calc(100vh - var(--lk-control-bar-height))" }}
+			className="h-[calc(100vh-var(--lk-control-bar-height))]"
 		>
 			<ParticipantTile />
 		</GridLayout>
