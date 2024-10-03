@@ -64,8 +64,9 @@ export default function Page() {
 						xmlns="http://www.w3.org/2000/svg"
 						fill="none"
 						viewBox="0 0 24 24"
-            title="Loading indicator"
+						aria-label="Loading..."
 					>
+						<title>Loading Indicator</title>
 						<circle
 							className="opacity-25"
 							cx="12"
