@@ -1,18 +1,17 @@
 "use client";
 
 import {
-	LiveKitRoom,
-	MediaDeviceMenu,
-	RoomAudioRenderer,
 	ControlBar,
-	GridLayout,
-	ParticipantTile,
+	LiveKitRoom,
+	RoomAudioRenderer,
+	type TrackReference,
+	VideoTrack,
 	useTracks,
 } from "@livekit/components-react";
 import "@livekit/components-styles";
 import { Track } from "livekit-client";
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function RoomPage({ params }: { params: { code: string } }) {
 	const [username, setUsername] = useState<string | null>(null);
@@ -20,35 +19,36 @@ export default function RoomPage({ params }: { params: { code: string } }) {
 	const [token, setToken] = useState<string | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
 	const [showUsernamePrompt, setShowUsernamePrompt] = useState(false);
-	const router = useRouter();
 
 	const meetingCode = params.code.trim().toUpperCase();
 
 	useEffect(() => {
 		// Check camera permissions
-		navigator.permissions.query({ name: "camera" as PermissionName }).then((result) => {
-			if (result.state === "granted") {
-				initiateJoin();
-			} else if (result.state === "prompt") {
-				setShowUsernamePrompt(true);
-			} else {
-				// Permission denied
-				alert(
-					"Camera access denied. Please enable it in your browser settings to join the meeting."
-				);
-			}
-
-			// Listen for changes in permission state
-			result.onchange = () => {
+		navigator.permissions
+			.query({ name: "camera" as PermissionName })
+			.then((result) => {
 				if (result.state === "granted") {
 					initiateJoin();
-				} else if (result.state === "denied") {
+				} else if (result.state === "prompt") {
+					setShowUsernamePrompt(true);
+				} else {
+					// Permission denied
 					alert(
-						"Camera access denied. Please enable it in your browser settings to join the meeting."
+						"Camera access denied. Please enable it in your browser settings to join the meeting.",
 					);
 				}
-			};
-		});
+
+				// Listen for changes in permission state
+				result.onchange = () => {
+					if (result.state === "granted") {
+						initiateJoin();
+					} else if (result.state === "denied") {
+						alert(
+							"Camera access denied. Please enable it in your browser settings to join the meeting.",
+						);
+					}
+				};
+			});
 	}, []);
 
 	const initiateJoin = () => {
@@ -95,12 +95,6 @@ export default function RoomPage({ params }: { params: { code: string } }) {
 		// Store the username in sessionStorage
 		sessionStorage.setItem(`username_${meetingCode}`, usernameInput.trim());
 		setUsername(usernameInput.trim());
-	};
-
-	const handleLeave = () => {
-		// Clear the stored username when leaving the meeting
-		sessionStorage.removeItem(`username_${meetingCode}`);
-		router.push("/"); // Redirect to home or any other page
 	};
 
 	if (isLoading || (token && !username)) {
@@ -160,49 +154,78 @@ export default function RoomPage({ params }: { params: { code: string } }) {
 		);
 	}
 
-  return (
-    <>
-      {token && username && (
-        <LiveKitRoom
-          video={true}
-          audio={true}
-          token={token}
-          serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL || ""}
-          data-lk-theme="default"
-          className="h-screen"
-          onConnected={() => console.log("Connected to LiveKit Room")}
-          onDisconnected={() => console.log("Disconnected from LiveKit Room")}
-          onError={(error) => {
-            console.error("LiveKitRoom Error:", error);
-            alert("An error occurred with the LiveKit Room.");
-          }}
-        >
-          <MediaDeviceMenu />
-          <MyVideoConference />
-          <RoomAudioRenderer />
-          <ControlBar />
-        </LiveKitRoom>
-      )}
-      {/* Add other components or messages here */}
-    </>
-  );
+	return (
+		<>
+			{token && username && (
+				<LiveKitRoom
+					video={true}
+					audio={true}
+					token={token}
+					serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL || ""}
+					data-lk-theme="default"
+					className="h-screen"
+					onConnected={() => console.log("Connected to LiveKit Room")}
+					onDisconnected={() => console.log("Disconnected from LiveKit Room")}
+					onError={(error) => {
+						console.error("LiveKitRoom Error:", error);
+						alert("An error occurred with the LiveKit Room.");
+					}}
+				>
+					<VideoUI />
+					<RoomAudioRenderer />
+					<ControlBar />
+				</LiveKitRoom>
+			)}
+		</>
+	);
 }
 
-function MyVideoConference() {
-	const tracks = useTracks(
-		[
-			{ source: Track.Source.Camera, withPlaceholder: true },
-			{ source: Track.Source.ScreenShare, withPlaceholder: false },
-		],
-		{ onlySubscribed: false }
+function VideoUI() {
+	const trackReferences: TrackReference[] = useTracks([Track.Source.Camera]);
+	const localParticipantVideoTrack = trackReferences.find(
+		(track) => track.participant.isLocal,
+	);
+	const remoteParticipantVideoTracks = trackReferences.filter(
+		(track) => !track.participant.isLocal,
 	);
 
-	return (
-		<GridLayout
-			tracks={tracks}
-			className="h-[calc(100vh-var(--lk-control-bar-height))]"
-		>
-			<ParticipantTile />
-		</GridLayout>
-	);
+	const remoteCount = remoteParticipantVideoTracks.length;
+
+	if (!localParticipantVideoTrack) {
+		return null;
+	}
+
+	if (remoteCount === 0) {
+		return (
+			<div className="relative flex h-screen">
+				<VideoTrack
+					trackRef={localParticipantVideoTrack}
+					className="w-full h-full object-cover"
+				/>
+			</div>
+		);
+	}
+
+	if (remoteCount === 1) {
+		const remoteTrack = remoteParticipantVideoTracks[0];
+
+		return (
+			<div className="relative flex h-screen">
+				<div className="w-full h-full">
+					<VideoTrack
+						trackRef={remoteTrack}
+						className="w-full h-full object-cover"
+					/>
+				</div>
+				<div className="absolute bottom-4 right-4 w-48 h-36">
+					<VideoTrack
+						trackRef={localParticipantVideoTrack}
+						className="w-full h-full object-cover rounded-md shadow-lg"
+					/>
+				</div>
+			</div>
+		);
+	}
+
+	return null;
 }
