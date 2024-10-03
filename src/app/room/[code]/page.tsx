@@ -154,7 +154,7 @@ export default function RoomPage({ params }: { params: { code: string } }) {
 	}
 
 	return (
-		<>
+		<div className="min-h-screen flex flex-col">
 			{token && username && (
 				<LiveKitRoom
 					video={true}
@@ -162,7 +162,7 @@ export default function RoomPage({ params }: { params: { code: string } }) {
 					token={token}
 					serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL || ""}
 					data-lk-theme="default"
-					className="flex flex-col h-screen"
+					className="flex flex-col flex-grow h-full"
 					onConnected={() => console.log("Connected to LiveKit Room")}
 					onDisconnected={() => console.log("Disconnected from LiveKit Room")}
 					onError={(error) => {
@@ -170,16 +170,16 @@ export default function RoomPage({ params }: { params: { code: string } }) {
 						alert("An error occurred with the LiveKit Room.");
 					}}
 				>
-					<div className="flex-1 overflow-hidden">
+					<RoomAudioRenderer />
+					<div className="flex-grow flex flex-col">
 						<VideoUI />
-						<RoomAudioRenderer />
 					</div>
 					<div className="h-16 md:h-18">
 						<ControlBar className="h-full" />
 					</div>
 				</LiveKitRoom>
 			)}
-		</>
+		</div>
 	);
 }
 
@@ -199,21 +199,21 @@ function VideoUI() {
 
 	if (remoteCount === 0) {
 		return (
-			<div className="relative flex h-full">
+			<div className="relative flex-grow flex items-center justify-center">
 				<VideoTrack
 					trackRef={localParticipantVideoTrack}
-					className="w-full h-full object-cover"
+					className="w-full h-full object-contain"
 				/>
 			</div>
 		);
 	}
 
 	return (
-		<div className="relative flex h-full">
-			<div className="w-full h-full">
+		<div className="relative flex-grow flex items-center justify-center">
+			<div className="w-full h-full flex items-center justify-center">
 				<VideoTrack
 					trackRef={remoteParticipantVideoTracks[0]}
-					className="w-full h-full object-cover"
+					className="w-full h-full object-contain"
 				/>
 			</div>
 			<div className="absolute bottom-4 right-4 w-48 h-36">
