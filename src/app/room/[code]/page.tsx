@@ -196,6 +196,8 @@ function VideoUI() {
 	const [isLocalPortrait, setIsLocalPortrait] = useState(false);
 	const [isRemotePortrait, setIsRemotePortrait] = useState(false);
 
+	console.log({ localParticipantVideoTrack, remoteParticipantVideoTracks });
+
 	useEffect(() => {
 		if (localParticipantVideoTrack?.publication.dimensions) {
 			const { width, height } = localParticipantVideoTrack.publication.dimensions;
