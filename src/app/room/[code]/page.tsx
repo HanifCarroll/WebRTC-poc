@@ -1,50 +1,67 @@
 "use client";
 
 import {
-	ControlBar,
-	GridLayout,
 	LiveKitRoom,
 	MediaDeviceMenu,
-	ParticipantTile,
 	RoomAudioRenderer,
+	ControlBar,
+	GridLayout,
+	ParticipantTile,
 	useTracks,
 } from "@livekit/components-react";
 import "@livekit/components-styles";
 import { Track } from "livekit-client";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function RoomPage({ params }: { params: { code: string } }) {
 	const [username, setUsername] = useState<string | null>(null);
 	const [usernameInput, setUsernameInput] = useState("");
 	const [token, setToken] = useState<string | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
+	const [showUsernamePrompt, setShowUsernamePrompt] = useState(false);
+	const router = useRouter();
 
 	const meetingCode = params.code.trim().toUpperCase();
 
 	useEffect(() => {
-		const handleBeforeUnload = () => {
-			sessionStorage.removeItem(`username_${meetingCode}`);
-		};
+		// Check camera permissions
+		navigator.permissions.query({ name: "camera" as PermissionName }).then((result) => {
+			if (result.state === "granted") {
+				initiateJoin();
+			} else if (result.state === "prompt") {
+				setShowUsernamePrompt(true);
+			} else {
+				// Permission denied
+				alert(
+					"Camera access denied. Please enable it in your browser settings to join the meeting."
+				);
+			}
 
-		window.addEventListener("beforeunload", handleBeforeUnload);
+			// Listen for changes in permission state
+			result.onchange = () => {
+				if (result.state === "granted") {
+					initiateJoin();
+				} else if (result.state === "denied") {
+					alert(
+						"Camera access denied. Please enable it in your browser settings to join the meeting."
+					);
+				}
+			};
+		});
+	}, []);
 
-		return () => {
-			window.removeEventListener("beforeunload", handleBeforeUnload);
-		};
-	}, [meetingCode]);
-
-	useEffect(() => {
-		// Attempt to retrieve the username from sessionStorage
+	const initiateJoin = () => {
 		const storedUsername = sessionStorage.getItem(`username_${meetingCode}`);
 		if (storedUsername) {
 			setUsername(storedUsername);
+			fetchToken(storedUsername);
+		} else {
+			setShowUsernamePrompt(true);
 		}
-	}, [meetingCode]);
+	};
 
-	const handleJoin = async (e: React.FormEvent) => {
-		e.preventDefault();
-		if (usernameInput.trim() === "") return;
-
+	const fetchToken = async (username: string) => {
 		setIsLoading(true);
 		try {
 			const response = await fetch("/api/get-participant-token", {
@@ -52,18 +69,12 @@ export default function RoomPage({ params }: { params: { code: string } }) {
 				headers: {
 					"Content-Type": "application/json",
 				},
-				body: JSON.stringify({
-					room: meetingCode,
-					username: usernameInput.trim(),
-				}),
+				body: JSON.stringify({ room: meetingCode, username: username.trim() }),
 			});
 
 			const data = await response.json();
 
 			if (response.ok) {
-				// Store the username in sessionStorage
-				sessionStorage.setItem(`username_${meetingCode}`, usernameInput.trim());
-				setUsername(usernameInput.trim());
 				setToken(data.token);
 			} else {
 				alert(data.error || "Failed to join the meeting.");
@@ -76,7 +87,23 @@ export default function RoomPage({ params }: { params: { code: string } }) {
 		}
 	};
 
-	if (isLoading) {
+	const handleJoin = async (e: React.FormEvent) => {
+		e.preventDefault();
+		if (usernameInput.trim() === "") return;
+
+		await fetchToken(usernameInput.trim());
+		// Store the username in sessionStorage
+		sessionStorage.setItem(`username_${meetingCode}`, usernameInput.trim());
+		setUsername(usernameInput.trim());
+	};
+
+	const handleLeave = () => {
+		// Clear the stored username when leaving the meeting
+		sessionStorage.removeItem(`username_${meetingCode}`);
+		router.push("/"); // Redirect to home or any other page
+	};
+
+	if (isLoading || (token && !username)) {
 		return (
 			<div className="flex items-center justify-center min-h-screen bg-gray-100">
 				<svg
@@ -105,7 +132,7 @@ export default function RoomPage({ params }: { params: { code: string } }) {
 		);
 	}
 
-	if (!username) {
+	if (showUsernamePrompt && !username) {
 		return (
 			<div className="flex items-center justify-center min-h-screen bg-gray-100">
 				<div className="bg-white p-8 rounded shadow-md w-full max-w-md">
@@ -133,21 +160,32 @@ export default function RoomPage({ params }: { params: { code: string } }) {
 		);
 	}
 
-	return (
-		<LiveKitRoom
-			video={true}
-			audio={true}
-			token={token || ""}
-			serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL || ""}
-			data-lk-theme="default"
-			className="h-screen"
-		>
-			<MediaDeviceMenu />
-			<MyVideoConference />
-			<RoomAudioRenderer />
-			<ControlBar />
-		</LiveKitRoom>
-	);
+  return (
+    <>
+      {token && username && (
+        <LiveKitRoom
+          video={true}
+          audio={true}
+          token={token}
+          serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL || ""}
+          data-lk-theme="default"
+          className="h-screen"
+          onConnected={() => console.log("Connected to LiveKit Room")}
+          onDisconnected={() => console.log("Disconnected from LiveKit Room")}
+          onError={(error) => {
+            console.error("LiveKitRoom Error:", error);
+            alert("An error occurred with the LiveKit Room.");
+          }}
+        >
+          <MediaDeviceMenu />
+          <MyVideoConference />
+          <RoomAudioRenderer />
+          <ControlBar />
+        </LiveKitRoom>
+      )}
+      {/* Add other components or messages here */}
+    </>
+  );
 }
 
 function MyVideoConference() {
@@ -156,7 +194,7 @@ function MyVideoConference() {
 			{ source: Track.Source.Camera, withPlaceholder: true },
 			{ source: Track.Source.ScreenShare, withPlaceholder: false },
 		],
-		{ onlySubscribed: false },
+		{ onlySubscribed: false }
 	);
 
 	return (
