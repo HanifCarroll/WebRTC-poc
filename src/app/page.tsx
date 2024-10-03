@@ -24,15 +24,16 @@ export default function Page() {
 
 	// Fetch the list of existing rooms when component mounts
 	useEffect(() => {
-		(async () => {
-			try {
-				const resp = await fetch("/api/get-room-list");
-				const data = await resp.json();
-				setRoomList(data.rooms);
-			} catch (e) {
-				console.error(e);
-			}
-		})();
+		const fetchRooms = async () => {
+			const response = await fetch('/api/get-room-list');
+			const data = await response.json();
+			setRoomList(data.rooms);
+		};
+
+		fetchRooms();
+		const interval = setInterval(fetchRooms, 10000); // Poll every 10 seconds
+
+		return () => clearInterval(interval);
 	}, []);
 
 	// Fetch token when name and room are set
