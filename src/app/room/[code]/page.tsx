@@ -193,6 +193,15 @@ function VideoUI() {
 	);
 	const remoteCount = remoteParticipantVideoTracks.length;
 
+	const [isPortrait, setIsPortrait] = useState(false);
+
+	useEffect(() => {
+		if (localParticipantVideoTrack?.publication.dimensions) {
+			const { width, height } = localParticipantVideoTrack.publication.dimensions;
+			setIsPortrait(height > width);
+		}
+	}, [localParticipantVideoTrack]);
+
 	if (!localParticipantVideoTrack) {
 		return null;
 	}
@@ -216,10 +225,10 @@ function VideoUI() {
 					className="w-full h-full object-contain"
 				/>
 			</div>
-			<div className="absolute bottom-4 right-4 w-48 h-36">
+			<div className={`absolute bottom-4 right-4 ${isPortrait ? 'w-36 h-48' : 'w-48 h-36'}`}>
 				<VideoTrack
 					trackRef={localParticipantVideoTrack}
-					className="w-full h-full object-cover rounded-md shadow-lg"
+					className="w-full h-full object-cover rounded-md shadow-lg md:object-contain"
 				/>
 			</div>
 		</div>
