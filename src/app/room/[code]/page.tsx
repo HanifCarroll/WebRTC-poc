@@ -11,32 +11,59 @@ import {
 } from "@livekit/components-react";
 import "@livekit/components-styles";
 import { Track } from "livekit-client";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function RoomPage({ params }: { params: { code: string } }) {
-	const [username, setUsername] = useState("");
+	const [username, setUsername] = useState<string | null>(null);
+	const [usernameInput, setUsernameInput] = useState("");
 	const [token, setToken] = useState<string | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
-	const router = useRouter();
+
+	const meetingCode = params.code.trim().toUpperCase();
+
+	useEffect(() => {
+		const handleBeforeUnload = () => {
+			sessionStorage.removeItem(`username_${meetingCode}`);
+		};
+
+		window.addEventListener("beforeunload", handleBeforeUnload);
+
+		return () => {
+			window.removeEventListener("beforeunload", handleBeforeUnload);
+		};
+	}, [meetingCode]);
+
+	useEffect(() => {
+		// Attempt to retrieve the username from sessionStorage
+		const storedUsername = sessionStorage.getItem(`username_${meetingCode}`);
+		if (storedUsername) {
+			setUsername(storedUsername);
+		}
+	}, [meetingCode]);
 
 	const handleJoin = async (e: React.FormEvent) => {
 		e.preventDefault();
-		if (username.trim() === "") return;
+		if (usernameInput.trim() === "") return;
 
 		setIsLoading(true);
 		try {
-			const response = await fetch(`/api/get-participant-token`, {
+			const response = await fetch("/api/get-participant-token", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
 				},
-				body: JSON.stringify({ room: params.code, username: username.trim() }),
+				body: JSON.stringify({
+					room: meetingCode,
+					username: usernameInput.trim(),
+				}),
 			});
 
 			const data = await response.json();
 
 			if (response.ok) {
+				// Store the username in sessionStorage
+				sessionStorage.setItem(`username_${meetingCode}`, usernameInput.trim());
+				setUsername(usernameInput.trim());
 				setToken(data.token);
 			} else {
 				alert(data.error || "Failed to join the meeting.");
@@ -78,7 +105,7 @@ export default function RoomPage({ params }: { params: { code: string } }) {
 		);
 	}
 
-	if (!token) {
+	if (!username) {
 		return (
 			<div className="flex items-center justify-center min-h-screen bg-gray-100">
 				<div className="bg-white p-8 rounded shadow-md w-full max-w-md">
@@ -88,8 +115,8 @@ export default function RoomPage({ params }: { params: { code: string } }) {
 					<form onSubmit={handleJoin} className="space-y-4">
 						<input
 							type="text"
-							value={username}
-							onChange={(e) => setUsername(e.target.value)}
+							value={usernameInput}
+							onChange={(e) => setUsernameInput(e.target.value)}
 							placeholder="Your name"
 							className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
 							required
@@ -110,7 +137,7 @@ export default function RoomPage({ params }: { params: { code: string } }) {
 		<LiveKitRoom
 			video={true}
 			audio={true}
-			token={token}
+			token={token || ""}
 			serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL || ""}
 			data-lk-theme="default"
 			className="h-screen"

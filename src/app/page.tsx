@@ -16,12 +16,16 @@ export default function Page() {
 			.toString(36)
 			.substring(2, 10)
 			.toUpperCase();
+		// Store the username in sessionStorage with a key unique to the meeting code
+		sessionStorage.setItem(`username_${meetingCode}`, name.trim());
 		// Redirect to the meeting room with the meeting code
 		router.push(`/room/${meetingCode}`);
 	};
 
 	const handleJoinMeeting = () => {
 		if (joinCode.trim() === "") return;
+		// Store the username in sessionStorage with a key unique to the join code
+		sessionStorage.setItem(`username_${joinCode.trim()}`, name.trim());
 		// Redirect to the meeting room with the provided meeting code
 		router.push(`/room/${joinCode.trim()}`);
 	};
@@ -29,7 +33,7 @@ export default function Page() {
 	const handleSubmitName = (e: React.FormEvent) => {
 		e.preventDefault();
 		if (inputName.trim() === "") return;
-		setName(inputName);
+		setName(inputName.trim());
 	};
 
 	return (
@@ -75,7 +79,7 @@ export default function Page() {
 							<input
 								type="text"
 								value={joinCode}
-								onChange={(e) => setJoinCode(e.target.value)}
+								onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
 								placeholder="Enter Meeting Code"
 								className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
 							/>
