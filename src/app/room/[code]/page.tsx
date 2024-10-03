@@ -10,7 +10,6 @@ import {
 } from "@livekit/components-react";
 import "@livekit/components-styles";
 import { Track } from "livekit-client";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function RoomPage({ params }: { params: { code: string } }) {
@@ -163,7 +162,7 @@ export default function RoomPage({ params }: { params: { code: string } }) {
 					token={token}
 					serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL || ""}
 					data-lk-theme="default"
-					className="h-screen"
+					className="flex flex-col h-screen"
 					onConnected={() => console.log("Connected to LiveKit Room")}
 					onDisconnected={() => console.log("Disconnected from LiveKit Room")}
 					onError={(error) => {
@@ -171,9 +170,13 @@ export default function RoomPage({ params }: { params: { code: string } }) {
 						alert("An error occurred with the LiveKit Room.");
 					}}
 				>
-					<VideoUI />
-					<RoomAudioRenderer />
-					<ControlBar />
+					<div className="flex-1 overflow-hidden">
+						<VideoUI />
+						<RoomAudioRenderer />
+					</div>
+					<div className="h-16 md:h-18">
+						<ControlBar className="h-full" />
+					</div>
 				</LiveKitRoom>
 			)}
 		</>
@@ -188,7 +191,6 @@ function VideoUI() {
 	const remoteParticipantVideoTracks = trackReferences.filter(
 		(track) => !track.participant.isLocal,
 	);
-
 	const remoteCount = remoteParticipantVideoTracks.length;
 
 	if (!localParticipantVideoTrack) {
@@ -197,7 +199,7 @@ function VideoUI() {
 
 	if (remoteCount === 0) {
 		return (
-			<div className="relative flex h-screen">
+			<div className="relative flex h-full">
 				<VideoTrack
 					trackRef={localParticipantVideoTrack}
 					className="w-full h-full object-cover"
@@ -206,26 +208,20 @@ function VideoUI() {
 		);
 	}
 
-	if (remoteCount === 1) {
-		const remoteTrack = remoteParticipantVideoTracks[0];
-
-		return (
-			<div className="relative flex h-screen">
-				<div className="w-full h-full">
-					<VideoTrack
-						trackRef={remoteTrack}
-						className="w-full h-full object-cover"
-					/>
-				</div>
-				<div className="absolute bottom-4 right-4 w-48 h-36">
-					<VideoTrack
-						trackRef={localParticipantVideoTrack}
-						className="w-full h-full object-cover rounded-md shadow-lg"
-					/>
-				</div>
+	return (
+		<div className="relative flex h-full">
+			<div className="w-full h-full">
+				<VideoTrack
+					trackRef={remoteParticipantVideoTracks[0]}
+					className="w-full h-full object-cover"
+				/>
 			</div>
-		);
-	}
-
-	return null;
+			<div className="absolute bottom-4 right-4 w-48 h-36">
+				<VideoTrack
+					trackRef={localParticipantVideoTrack}
+					className="w-full h-full object-cover rounded-md shadow-lg"
+				/>
+			</div>
+		</div>
+	);
 }
