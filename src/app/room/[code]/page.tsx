@@ -196,25 +196,26 @@ function VideoUI() {
 	const [isLocalPortrait, setIsLocalPortrait] = useState(false);
 	const [isRemotePortrait, setIsRemotePortrait] = useState(false);
 
-	console.log(JSON.stringify(localParticipantVideoTrack));
-
 	useEffect(() => {
-		if (localParticipantVideoTrack?.publication.dimensions) {
-			const { width, height } = localParticipantVideoTrack.publication.dimensions;
-			setIsLocalPortrait(height > width);
+		const videoTrack =
+			localParticipantVideoTrack?.publication?.track?.mediaStreamTrack;
+		if (videoTrack) {
+			const { width, height } = videoTrack.getSettings();
+			if (width && height) {
+				setIsLocalPortrait(height > width);
+			}
 		}
 	}, [localParticipantVideoTrack]);
 
 	useEffect(() => {
-		const checkRemoteAspectRatio = () => {
-			if (remoteParticipantVideoTracks[0]?.publication.dimensions) {
-				const { width, height } =
-					remoteParticipantVideoTracks[0].publication.dimensions;
+		const videoTrack =
+			remoteParticipantVideoTracks[0]?.publication?.track?.mediaStreamTrack;
+		if (videoTrack) {
+			const { width, height } = videoTrack.getSettings();
+			if (width && height) {
 				setIsRemotePortrait(height > width);
 			}
-		};
-
-		checkRemoteAspectRatio();
+		}
 	}, [remoteParticipantVideoTracks]);
 
 	if (!localParticipantVideoTrack) {
@@ -234,19 +235,13 @@ function VideoUI() {
 				<>
 					<div
 						className={`w-full h-full flex items-center justify-center ${
-							isRemotePortrait ? 'flex-col' : 'flex-row'
+							isRemotePortrait ? "flex-col" : "flex-row"
 						}`}
 					>
 						<div
 							className={`${
-								isRemotePortrait
-									? 'max-h-full w-auto'
-									: 'max-w-full h-auto'
-							} ${
-								isRemotePortrait
-									? 'aspect-[9/16]'
-									: 'aspect-[16/9]'
-							}`}
+								isRemotePortrait ? "max-h-full w-auto" : "max-w-full h-auto"
+							} ${isRemotePortrait ? "aspect-[9/16]" : "aspect-[16/9]"}`}
 						>
 							<VideoTrack
 								trackRef={remoteParticipantVideoTracks[0]}
@@ -256,7 +251,7 @@ function VideoUI() {
 					</div>
 					<div
 						className={`absolute bottom-4 right-4 ${
-							isLocalPortrait ? 'w-24 h-32' : 'w-32 h-24'
+							isLocalPortrait ? "w-24 h-32" : "w-32 h-24"
 						} z-10`}
 					>
 						<VideoTrack
