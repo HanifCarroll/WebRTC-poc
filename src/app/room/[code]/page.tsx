@@ -154,7 +154,7 @@ export default function RoomPage({ params }: { params: { code: string } }) {
 	}
 
 	return (
-		<div className="min-h-screen flex flex-col">
+		<div className="h-screen flex flex-col">
 			{token && username && (
 				<LiveKitRoom
 					video={true}
@@ -162,7 +162,7 @@ export default function RoomPage({ params }: { params: { code: string } }) {
 					token={token}
 					serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL || ""}
 					data-lk-theme="default"
-					className="flex flex-col flex-1 h-full w-full overflow-hidden"
+					className="flex flex-col h-full w-full"
 					onConnected={() => console.log("Connected to LiveKit Room")}
 					onDisconnected={() => console.log("Disconnected from LiveKit Room")}
 					onError={(error) => {
@@ -171,7 +171,7 @@ export default function RoomPage({ params }: { params: { code: string } }) {
 					}}
 				>
 					<RoomAudioRenderer />
-					<div className="flex-1 flex flex-col overflow-hidden">
+					<div className="flex-1 overflow-hidden">
 						<VideoUI />
 					</div>
 					<div className="h-16 md:h-18 flex-shrink-0">
@@ -186,10 +186,10 @@ export default function RoomPage({ params }: { params: { code: string } }) {
 function VideoUI() {
 	const trackReferences: TrackReference[] = useTracks([Track.Source.Camera]);
 	const localParticipantVideoTrack = trackReferences.find(
-		(track) => track.participant.isLocal
+		(track) => track.participant.isLocal,
 	);
 	const remoteParticipantVideoTracks = trackReferences.filter(
-		(track) => !track.participant.isLocal
+		(track) => !track.participant.isLocal,
 	);
 	const remoteCount = remoteParticipantVideoTracks.length;
 
@@ -198,7 +198,8 @@ function VideoUI() {
 
 	useEffect(() => {
 		if (localParticipantVideoTrack) {
-			const videoTrack = localParticipantVideoTrack.publication?.track?.mediaStreamTrack;
+			const videoTrack =
+				localParticipantVideoTrack.publication?.track?.mediaStreamTrack;
 			if (videoTrack) {
 				const { width, height } = videoTrack.getSettings();
 				if (width && height) {
@@ -210,7 +211,8 @@ function VideoUI() {
 
 	useEffect(() => {
 		if (remoteParticipantVideoTracks.length > 0) {
-			const videoTrack = remoteParticipantVideoTracks[0].publication?.track?.mediaStreamTrack;
+			const videoTrack =
+				remoteParticipantVideoTracks[0].publication?.track?.mediaStreamTrack;
 			if (videoTrack) {
 				const { width, height } = videoTrack.getSettings();
 				if (width && height) {
@@ -227,13 +229,10 @@ function VideoUI() {
 	return (
 		<div
 			id="video-container"
-			className="relative flex-1 bg-black overflow-hidden"
+			className="relative h-full bg-black overflow-hidden"
 		>
 			{remoteCount === 0 && (
-				<div
-					id="local-video-wrapper"
-					className="w-full h-full"
-				>
+				<div id="local-video-wrapper" className="w-full h-full">
 					<VideoTrack
 						id="local-video-track"
 						trackRef={localParticipantVideoTrack}
@@ -243,7 +242,7 @@ function VideoUI() {
 			)}
 
 			{remoteCount > 0 && (
-				<div className="flex flex-1 h-full">
+				<div className="flex h-full">
 					<div
 						id="remote-video-wrapper"
 						className={`flex-1 flex items-center justify-center ${
@@ -253,7 +252,7 @@ function VideoUI() {
 						<VideoTrack
 							id="remote-video-track"
 							trackRef={remoteParticipantVideoTracks[0]}
-							className="w-full h-full object-contain"
+							className={`w-full h-full ${isRemotePortrait ? "object-contain" : "object-cover"}`}
 						/>
 					</div>
 					<div
