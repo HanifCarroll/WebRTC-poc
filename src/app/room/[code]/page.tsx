@@ -162,7 +162,7 @@ export default function RoomPage({ params }: { params: { code: string } }) {
 					token={token}
 					serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL || ""}
 					data-lk-theme="default"
-					className="flex flex-col flex-grow h-full"
+					className="flex flex-col flex-1 h-full w-full overflow-hidden"
 					onConnected={() => console.log("Connected to LiveKit Room")}
 					onDisconnected={() => console.log("Disconnected from LiveKit Room")}
 					onError={(error) => {
@@ -171,10 +171,10 @@ export default function RoomPage({ params }: { params: { code: string } }) {
 					}}
 				>
 					<RoomAudioRenderer />
-					<div className="flex-grow flex flex-col">
+					<div className="flex-1 flex flex-col overflow-hidden">
 						<VideoUI />
 					</div>
-					<div className="h-16 md:h-18">
+					<div className="h-16 md:h-18 flex-shrink-0">
 						<ControlBar className="h-full" />
 					</div>
 				</LiveKitRoom>
@@ -225,9 +225,15 @@ function VideoUI() {
 	}
 
 	return (
-		<div id="video-container" className="relative flex-1 bg-black overflow-hidden">
+		<div
+			id="video-container"
+			className="relative flex-1 bg-black overflow-hidden"
+		>
 			{remoteCount === 0 && (
-				<div id="local-video-wrapper" className="w-full h-full">
+				<div
+					id="local-video-wrapper"
+					className="w-full h-full"
+				>
 					<VideoTrack
 						id="local-video-track"
 						trackRef={localParticipantVideoTrack}
@@ -237,24 +243,24 @@ function VideoUI() {
 			)}
 
 			{remoteCount > 0 && (
-				<div className="grid grid-cols-1 md:grid-cols-2 h-full">
+				<div className="flex flex-1 h-full">
 					<div
 						id="remote-video-wrapper"
-						className={`w-full h-full ${
-							isRemotePortrait ? "flex justify-center items-center" : "flex justify-center items-center"
+						className={`flex-1 flex items-center justify-center ${
+							isRemotePortrait ? "pl-4 pr-2" : "pl-2 pr-4"
 						}`}
 					>
 						<VideoTrack
 							id="remote-video-track"
 							trackRef={remoteParticipantVideoTracks[0]}
-							className="max-w-full max-h-full object-contain"
+							className="w-full h-full object-contain"
 						/>
 					</div>
 					<div
 						id="local-video-pip"
 						className={`
 							absolute bottom-4 right-4 
-							${isLocalPortrait ? "w-24 h-32" : "w-32 h-24"} 
+							${isLocalPortrait ? "w-24 h-32 md:w-32 md:h-48" : "w-32 h-24 md:w-48 md:h-32"} 
 							z-10
 						`}
 					>
