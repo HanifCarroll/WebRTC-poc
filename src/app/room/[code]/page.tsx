@@ -22,7 +22,7 @@ export default function RoomPage({ params }: { params: { code: string } }) {
 	const meetingCode = params.code.trim().toUpperCase();
 
 	useEffect(() => {
-		// Check camera permissions
+		// Check camera permissions when the component mounts
 		navigator.permissions
 			.query({ name: "camera" as PermissionName })
 			.then((result) => {
@@ -50,6 +50,11 @@ export default function RoomPage({ params }: { params: { code: string } }) {
 			});
 	}, []);
 
+	/**
+	 * Initiates the process to join the meeting by checking for a stored username.
+	 * If a username exists in session storage, it uses that to fetch a token.
+	 * Otherwise, it prompts the user to enter a username.
+	 */
 	const initiateJoin = () => {
 		const storedUsername = sessionStorage.getItem(`username_${meetingCode}`);
 		if (storedUsername) {
@@ -60,6 +65,12 @@ export default function RoomPage({ params }: { params: { code: string } }) {
 		}
 	};
 
+	/**
+	 * Fetches an authentication token from the server for the given username and meeting code.
+	 * Handles loading state and error alerts based on the response.
+	 * 
+	 * @param username - The username of the participant
+	 */
 	const fetchToken = async (username: string) => {
 		setIsLoading(true);
 		try {
@@ -86,12 +97,18 @@ export default function RoomPage({ params }: { params: { code: string } }) {
 		}
 	};
 
+	/**
+	 * Handles the submission of the username form.
+	 * Fetches a token using the entered username and stores it in session storage.
+	 * 
+	 * @param e - The form submission event
+	 */
 	const handleJoin = async (e: React.FormEvent) => {
 		e.preventDefault();
 		if (usernameInput.trim() === "") return;
 
 		await fetchToken(usernameInput.trim());
-		// Store the username in sessionStorage
+		// Store the username to avoid prompting again in the same session
 		sessionStorage.setItem(`username_${meetingCode}`, usernameInput.trim());
 		setUsername(usernameInput.trim());
 	};
@@ -163,12 +180,6 @@ export default function RoomPage({ params }: { params: { code: string } }) {
 					serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL || ""}
 					data-lk-theme="default"
 					className="flex flex-col h-full w-full"
-					onConnected={() => console.log("Connected to LiveKit Room")}
-					onDisconnected={() => console.log("Disconnected from LiveKit Room")}
-					onError={(error) => {
-						console.error("LiveKitRoom Error:", error);
-						alert("An error occurred with the LiveKit Room.");
-					}}
 				>
 					<RoomAudioRenderer />
 					<div className="flex-1 overflow-hidden">
@@ -252,7 +263,9 @@ function VideoUI() {
 						<VideoTrack
 							id="remote-video-track"
 							trackRef={remoteParticipantVideoTracks[0]}
-							className={`w-full h-full ${isRemotePortrait ? "object-contain" : "object-cover"}`}
+							className={`w-full h-full ${
+								isRemotePortrait ? "object-contain" : "object-cover"
+							}`}
 						/>
 					</div>
 					<div
