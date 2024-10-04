@@ -223,38 +223,56 @@ function VideoUI() {
 	}
 
 	return (
-		<div className="relative flex-grow flex items-center justify-center bg-black">
-			{remoteCount === 0 ? (
-				<div className="relative w-full h-full flex items-center justify-center">
+		<div
+			id="video-container"
+			className="relative flex-1 bg-black"
+		>
+			{remoteCount === 0 && (
+				<div
+					id="local-video-wrapper"
+					className="w-full h-full"
+				>
 					<VideoTrack
+						id="local-video-track"
 						trackRef={localParticipantVideoTrack}
-						className="w-full h-full object-contain"
+						className="w-full h-full object-cover"
 					/>
 				</div>
-			) : (
+			)}
+
+			{remoteCount > 0 && (
 				<>
 					<div
-						className={`w-full h-full flex items-center justify-center ${
+						id="remote-video-wrapper"
+						className={`w-full h-full ${
 							isRemotePortrait ? "flex-col" : "flex-row"
 						}`}
 					>
 						<div
-							className={`${
-								isRemotePortrait ? "max-h-full w-auto" : "max-w-full h-auto"
-							} ${isRemotePortrait ? "aspect-[9/16]" : "aspect-[16/9]"}`}
+							id="remote-video-container"
+							className={`
+								w-full h-full 
+								${isRemotePortrait ? "aspect-[9/16]" : "aspect-[16/9]"}
+								flex-grow
+							`}
 						>
 							<VideoTrack
+								id="remote-video-track"
 								trackRef={remoteParticipantVideoTracks[0]}
-								className="w-full h-full object-contain"
+								className="w-full h-full object-cover"
 							/>
 						</div>
 					</div>
 					<div
-						className={`absolute bottom-4 right-4 ${
-							isLocalPortrait ? "w-24 h-32" : "w-32 h-24"
-						} z-10`}
+						id="local-video-pip"
+						className={`
+							absolute bottom-4 right-4 
+							${isLocalPortrait ? "w-24 h-32" : "w-32 h-24"} 
+							z-10
+						`}
 					>
 						<VideoTrack
+							id="local-video-track-pip"
 							trackRef={localParticipantVideoTrack}
 							className="w-full h-full object-cover rounded-md shadow-lg"
 						/>
