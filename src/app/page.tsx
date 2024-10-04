@@ -40,7 +40,7 @@ export default function Page() {
 		<div className="flex items-center justify-center min-h-screen bg-gray-100">
 			{!name ? (
 				<div className="bg-white p-8 rounded shadow-md w-full max-w-md">
-					<h1 className="text-2xl font-semibold text-center mb-6">
+					<h1 className="text-2xl text-gray-900 font-semibold text-center mb-6">
 						Enter your name
 					</h1>
 					<form onSubmit={handleSubmitName} className="space-y-4">
@@ -49,7 +49,7 @@ export default function Page() {
 							value={inputName}
 							onChange={(e) => setInputName(e.target.value)}
 							placeholder="Your name"
-							className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+							className="text-gray-900 w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
 							required
 						/>
 						<button
@@ -62,13 +62,14 @@ export default function Page() {
 				</div>
 			) : (
 				<div className="bg-white p-8 rounded shadow-md w-full max-w-md">
-					<h1 className="text-2xl font-semibold text-center mb-6">
+					<h1 className="text-2xl text-gray-900 font-semibold text-center mb-6">
 						Welcome, {name}!
 					</h1>
 					<div className="space-y-4">
 						<button
 							onClick={handleStartMeeting}
 							className="w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded-md transition duration-200"
+							type="button"
 						>
 							Start a New Meeting
 						</button>
@@ -81,11 +82,12 @@ export default function Page() {
 								value={joinCode}
 								onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
 								placeholder="Enter Meeting Code"
-								className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+								className="text-gray-900 w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
 							/>
 							<button
 								onClick={handleJoinMeeting}
 								className="w-full mt-2 bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-md transition duration-200"
+								type="button"
 							>
 								Join Meeting
 							</button>

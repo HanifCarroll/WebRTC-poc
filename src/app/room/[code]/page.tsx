@@ -68,7 +68,7 @@ export default function RoomPage({ params }: { params: { code: string } }) {
 	/**
 	 * Fetches an authentication token from the server for the given username and meeting code.
 	 * Handles loading state and error alerts based on the response.
-	 * 
+	 *
 	 * @param username - The username of the participant
 	 */
 	const fetchToken = async (username: string) => {
@@ -100,7 +100,7 @@ export default function RoomPage({ params }: { params: { code: string } }) {
 	/**
 	 * Handles the submission of the username form.
 	 * Fetches a token using the entered username and stores it in session storage.
-	 * 
+	 *
 	 * @param e - The form submission event
 	 */
 	const handleJoin = async (e: React.FormEvent) => {
@@ -146,7 +146,7 @@ export default function RoomPage({ params }: { params: { code: string } }) {
 		return (
 			<div className="flex items-center justify-center min-h-screen bg-gray-100">
 				<div className="bg-white p-8 rounded shadow-md w-full max-w-md">
-					<h1 className="text-2xl font-semibold text-center mb-6">
+					<h1 className="text-2xl text-gray-900 font-semibold text-center mb-6">
 						Enter your username
 					</h1>
 					<form onSubmit={handleJoin} className="space-y-4">
@@ -155,7 +155,7 @@ export default function RoomPage({ params }: { params: { code: string } }) {
 							value={usernameInput}
 							onChange={(e) => setUsernameInput(e.target.value)}
 							placeholder="Your name"
-							className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+							className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
 							required
 						/>
 						<button
