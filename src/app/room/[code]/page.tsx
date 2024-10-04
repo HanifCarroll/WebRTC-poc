@@ -186,10 +186,10 @@ export default function RoomPage({ params }: { params: { code: string } }) {
 function VideoUI() {
 	const trackReferences: TrackReference[] = useTracks([Track.Source.Camera]);
 	const localParticipantVideoTrack = trackReferences.find(
-		(track) => track.participant.isLocal,
+		(track) => track.participant.isLocal
 	);
 	const remoteParticipantVideoTracks = trackReferences.filter(
-		(track) => !track.participant.isLocal,
+		(track) => !track.participant.isLocal
 	);
 	const remoteCount = remoteParticipantVideoTracks.length;
 
@@ -197,23 +197,25 @@ function VideoUI() {
 	const [isRemotePortrait, setIsRemotePortrait] = useState(false);
 
 	useEffect(() => {
-		const videoTrack =
-			localParticipantVideoTrack?.publication?.track?.mediaStreamTrack;
-		if (videoTrack) {
-			const { width, height } = videoTrack.getSettings();
-			if (width && height) {
-				setIsLocalPortrait(height > width);
+		if (localParticipantVideoTrack) {
+			const videoTrack = localParticipantVideoTrack.publication?.track?.mediaStreamTrack;
+			if (videoTrack) {
+				const { width, height } = videoTrack.getSettings();
+				if (width && height) {
+					setIsLocalPortrait(height > width);
+				}
 			}
 		}
 	}, [localParticipantVideoTrack]);
 
 	useEffect(() => {
-		const videoTrack =
-			remoteParticipantVideoTracks[0]?.publication?.track?.mediaStreamTrack;
-		if (videoTrack) {
-			const { width, height } = videoTrack.getSettings();
-			if (width && height) {
-				setIsRemotePortrait(height > width);
+		if (remoteParticipantVideoTracks.length > 0) {
+			const videoTrack = remoteParticipantVideoTracks[0].publication?.track?.mediaStreamTrack;
+			if (videoTrack) {
+				const { width, height } = videoTrack.getSettings();
+				if (width && height) {
+					setIsRemotePortrait(height > width);
+				}
 			}
 		}
 	}, [remoteParticipantVideoTracks]);
@@ -223,15 +225,9 @@ function VideoUI() {
 	}
 
 	return (
-		<div
-			id="video-container"
-			className="relative flex-1 bg-black"
-		>
+		<div id="video-container" className="relative flex-1 bg-black overflow-hidden">
 			{remoteCount === 0 && (
-				<div
-					id="local-video-wrapper"
-					className="w-full h-full"
-				>
+				<div id="local-video-wrapper" className="w-full h-full">
 					<VideoTrack
 						id="local-video-track"
 						trackRef={localParticipantVideoTrack}
@@ -241,27 +237,18 @@ function VideoUI() {
 			)}
 
 			{remoteCount > 0 && (
-				<>
+				<div className="grid grid-cols-1 md:grid-cols-2 h-full">
 					<div
 						id="remote-video-wrapper"
 						className={`w-full h-full ${
-							isRemotePortrait ? "flex-col" : "flex-row"
+							isRemotePortrait ? "flex justify-center items-center" : "flex justify-center items-center"
 						}`}
 					>
-						<div
-							id="remote-video-container"
-							className={`
-								w-full h-full 
-								${isRemotePortrait ? "aspect-[9/16]" : "aspect-[16/9]"}
-								flex-grow
-							`}
-						>
-							<VideoTrack
-								id="remote-video-track"
-								trackRef={remoteParticipantVideoTracks[0]}
-								className="w-full h-full object-cover"
-							/>
-						</div>
+						<VideoTrack
+							id="remote-video-track"
+							trackRef={remoteParticipantVideoTracks[0]}
+							className="max-w-full max-h-full object-contain"
+						/>
 					</div>
 					<div
 						id="local-video-pip"
@@ -277,7 +264,7 @@ function VideoUI() {
 							className="w-full h-full object-cover rounded-md shadow-lg"
 						/>
 					</div>
-				</>
+				</div>
 			)}
 		</div>
 	);
